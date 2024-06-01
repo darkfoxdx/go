@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"fmt"
 	"net"
+	"strings"
 )
 
 func main() {
@@ -43,7 +44,13 @@ func handleClient(conn net.Conn) {
 		}
 
 		// Process and use the data (here, we'll just print it)
-		fmt.Printf("Received: %s\n", string(message))
+		if strings.Contains(message, "uuid") {
+			parse := strings.Replace(string(message), "\n", "", 1)
+			uuid, _ := strings.CutPrefix(parse, "uuid: ")
+			fmt.Printf("%s has connected\n", uuid)
+		} else {
+			fmt.Printf("Received: %s\n", string(message))
+		}
 
 		// Return message
 		data := []byte("Hello, Client!\n")
