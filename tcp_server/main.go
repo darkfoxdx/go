@@ -1,8 +1,8 @@
 package main
 
 import (
+	"bufio"
 	"fmt"
-	"io"
 	"net"
 )
 
@@ -28,25 +28,28 @@ func main() {
 		// Handle client connection in a goroutine
 		go handleClient(conn)
 	}
+
 }
 
 func handleClient(conn net.Conn) {
 	defer conn.Close()
 
-	// Create a buffer to read data into
-	buffer := make([]byte, 1024)
-
 	for {
 		// Read data from the client
-		n, err := conn.Read(buffer)
+		message, err := bufio.NewReader(conn).ReadString('\n')
 		if err != nil {
-			if err != io.EOF {
-				fmt.Println("Error:", err)
-			}
+			fmt.Println("Error:", err)
 			return
 		}
 
 		// Process and use the data (here, we'll just print it)
-		fmt.Printf("Received: %s\n", buffer[:n])
+		fmt.Printf("Received: %s\n", string(message))
+
+		// Return message
+		data := []byte("Hello, Client!\n")
+		_, err = conn.Write(data)
+		if err != nil {
+			fmt.Println("server: failed to write!")
+		}
 	}
 }
