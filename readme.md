@@ -1,3 +1,6 @@
+# general tutorial
+1. https://go.dev/doc/tutorial/getting-started
+
 # tcp_client & tcp_server
 Sources
 1. https://systembash.com/a-simple-go-tcp-server-and-tcp-client/
