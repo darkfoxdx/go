@@ -1,9 +1,13 @@
 package main
 
 import (
+	"bufio"
 	"fmt"
 	"math"
+	"os"
 	"slices"
+	"strconv"
+	"strings"
 )
 
 type Node struct {
@@ -21,9 +25,33 @@ type Node struct {
 */
 
 func main() {
-	target := 830
-	num := []int{1, 2, 2, 3, 4, 1}
-	eq := []int{0, 1, 2} //0 = +, 1 = -, 2 =
+	reader := bufio.NewReader(os.Stdin)
+	fmt.Print("Enter target: ")
+	targetIn, _ := reader.ReadString('\n')
+
+	target, err := strconv.Atoi(strings.TrimSpace(targetIn))
+
+	if err != nil {
+		fmt.Println("That is not an integer. Error: ")
+		return
+	}
+
+	fmt.Print("Enter array of numbers (1,2,3,...): ")
+	numIn, _ := reader.ReadString('\n')
+
+	numInArray := strings.Split(numIn, ",")
+	num := make([]int, len(numInArray))
+
+	for i, line := range numInArray {
+		num[i], err = strconv.Atoi(strings.TrimSpace(line))
+
+		if err != nil {
+			fmt.Println("That is not an integer. Error: ")
+			return
+		}
+	}
+
+	eq := []int{0, 1, 2, 3} //0 = +, 1 = -, 2 = *, 3 = /
 	calc := []Node{}
 
 	length := 0
@@ -63,6 +91,7 @@ out:
 					// Ignore the numbers already in the equation
 					if !slices.Contains(selected.indice, j) {
 						// Loop through the arithmatic symbols
+					equation:
 						for e := 0; e < len(eq); e++ {
 							var result Node
 							switch eq[e] {
@@ -86,6 +115,17 @@ out:
 									calculation: append(selected.calculation, e, num[j]),
 									calc_string: fmt.Sprintf("%s*%d", selected.calc_string, num[j]),
 									total:       selected.total * num[j],
+								}
+							case 3:
+								if selected.total%num[j] == 0 {
+									result = Node{
+										indice:      append(selected.indice, j),
+										calculation: append(selected.calculation, e, num[j]),
+										calc_string: fmt.Sprintf("%s/%d", selected.calc_string, num[j]),
+										total:       selected.total / num[j],
+									}
+								} else {
+									break equation
 								}
 							}
 
