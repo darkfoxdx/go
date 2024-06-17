@@ -1,9 +1,13 @@
 package main
 
 import (
+	"bufio"
 	"fmt"
 	"math"
+	"os"
 	"slices"
+	"strconv"
+	"strings"
 )
 
 type Node struct {
@@ -23,38 +27,35 @@ type Node struct {
 */
 
 func main() {
-	// reader := bufio.NewReader(os.Stdin)
-	// fmt.Print("Enter target: ")
-	// targetIn, _ := reader.ReadString('\n')
+	reader := bufio.NewReader(os.Stdin)
+	fmt.Print("Enter target: ")
+	targetIn, _ := reader.ReadString('\n')
 
-	// target, err := strconv.Atoi(strings.TrimSpace(targetIn))
+	target, err := strconv.Atoi(strings.TrimSpace(targetIn))
 
-	// if err != nil {
-	// 	fmt.Println("That is not an integer. Error: ")
-	// 	return
-	// }
+	if err != nil {
+		fmt.Println("That is not an integer. Error: ")
+		return
+	}
 
-	// fmt.Print("Enter array of numbers (1,2,3,...): ")
-	// numIn, _ := reader.ReadString('\n')
+	fmt.Print("Enter array of numbers (1,2,3,...): ")
+	numIn, _ := reader.ReadString('\n')
 
-	// numInArray := strings.Split(numIn, ",")
-	// num := make([]int, len(numInArray))
+	numInArray := strings.Split(numIn, ",")
+	num := make([]int, len(numInArray))
 
-	// for i, line := range numInArray {
-	// 	num[i], err = strconv.Atoi(strings.TrimSpace(line))
+	for i, line := range numInArray {
+		num[i], err = strconv.Atoi(strings.TrimSpace(line))
 
-	// 	if err != nil {
-	// 		fmt.Println("That is not an integer. Error: ")
-	// 		return
-	// 	}
-	// }
+		if err != nil {
+			fmt.Println("That is not an integer. Error: ")
+			return
+		}
+	}
 
-	target := 494
-	//num := []int{50, 100, 75, 25, 5, 7}
-	num := []int{100, 5, 7, 75, 25, 50}
+start:
 	eq := 4 //0 = +, 1 = -, 2 = *, 3 = /
 	calc := []Node{}
-
 	length := 0
 	oldlength := 0
 	closest := Node{total: 0}
@@ -158,11 +159,21 @@ out:
 				}
 			}
 		}
-
 		oldlength = length
 	}
 
 	fmt.Printf("Closest: %v\n", closest)
+	if len(closest.indice) < len(num) && closest.total != target && target <= 0 {
+		target = target - closest.total
+		newArray := []int{}
+		for i, e := range num {
+			if !slices.Contains(closest.indice, i) {
+				newArray = append(newArray, e)
+			}
+		}
+		num = newArray
+		goto start
+	}
 
 	// parent := closest.parent
 	// for parent > len(num) {
