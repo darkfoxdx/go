@@ -1,16 +1,14 @@
 package main
 
 import (
-	"bufio"
 	"fmt"
 	"math"
-	"os"
 	"slices"
-	"strconv"
-	"strings"
 )
 
 type Node struct {
+	branch      int
+	parent      int
 	indice      []int
 	calculation []int
 	calc_string string
@@ -25,51 +23,56 @@ type Node struct {
 */
 
 func main() {
-	reader := bufio.NewReader(os.Stdin)
-	fmt.Print("Enter target: ")
-	targetIn, _ := reader.ReadString('\n')
+	// reader := bufio.NewReader(os.Stdin)
+	// fmt.Print("Enter target: ")
+	// targetIn, _ := reader.ReadString('\n')
 
-	target, err := strconv.Atoi(strings.TrimSpace(targetIn))
+	// target, err := strconv.Atoi(strings.TrimSpace(targetIn))
 
-	if err != nil {
-		fmt.Println("That is not an integer. Error: ")
-		return
-	}
+	// if err != nil {
+	// 	fmt.Println("That is not an integer. Error: ")
+	// 	return
+	// }
 
-	fmt.Print("Enter array of numbers (1,2,3,...): ")
-	numIn, _ := reader.ReadString('\n')
+	// fmt.Print("Enter array of numbers (1,2,3,...): ")
+	// numIn, _ := reader.ReadString('\n')
 
-	numInArray := strings.Split(numIn, ",")
-	num := make([]int, len(numInArray))
+	// numInArray := strings.Split(numIn, ",")
+	// num := make([]int, len(numInArray))
 
-	for i, line := range numInArray {
-		num[i], err = strconv.Atoi(strings.TrimSpace(line))
+	// for i, line := range numInArray {
+	// 	num[i], err = strconv.Atoi(strings.TrimSpace(line))
 
-		if err != nil {
-			fmt.Println("That is not an integer. Error: ")
-			return
-		}
-	}
+	// 	if err != nil {
+	// 		fmt.Println("That is not an integer. Error: ")
+	// 		return
+	// 	}
+	// }
 
-	eq := []int{0, 1, 2, 3} //0 = +, 1 = -, 2 = *, 3 = /
+	target := 494
+	//num := []int{50, 100, 75, 25, 5, 7}
+	num := []int{100, 5, 7, 75, 25, 50}
+	eq := 4 //0 = +, 1 = -, 2 = *, 3 = /
 	calc := []Node{}
 
 	length := 0
 	oldlength := 0
 	closest := Node{total: 0}
+	fmt.Printf("Target: %d and numbers is %v\n", target, num)
 out:
 	// For each level of the tree
 	// First branch = base number n, n+1, n+2...
 	// Second branch = n (equation) n+1, n (equation) n+2
 	for loop := 0; loop < len(num); loop++ {
 		length = len(calc)
-
 		if loop == 0 {
 			// Initialization
 			for i := 0; i < len(num); i++ {
 				result := Node{
+					branch:      loop,
+					parent:      i,
 					indice:      []int{i},
-					calculation: []int{num[i]},
+					calculation: []int{i},
 					calc_string: fmt.Sprintf("%d", num[i]),
 					total:       num[i],
 				}
@@ -78,6 +81,7 @@ out:
 					closest = result
 				}
 				if result.total == target {
+					closest = result
 					break out
 				}
 			}
@@ -89,64 +93,81 @@ out:
 				// Loop through each number
 				for j := 0; j < len(num); j++ {
 					// Ignore the numbers already in the equation
-					if !slices.Contains(selected.indice, j) {
-						// Loop through the arithmatic symbols
-					equation:
-						for e := 0; e < len(eq); e++ {
-							var result Node
-							switch eq[e] {
-							case 0:
-								result = Node{
-									indice:      append(selected.indice, j),
-									calculation: append(selected.calculation, e, num[j]),
-									calc_string: fmt.Sprintf("%s+%d", selected.calc_string, num[j]),
-									total:       selected.total + num[j],
-								}
-							case 1:
-								result = Node{
-									indice:      append(selected.indice, j),
-									calculation: append(selected.calculation, e, num[j]),
-									calc_string: fmt.Sprintf("%s-%d", selected.calc_string, num[j]),
-									total:       selected.total - num[j],
-								}
-							case 2:
-								result = Node{
-									indice:      append(selected.indice, j),
-									calculation: append(selected.calculation, e, num[j]),
-									calc_string: fmt.Sprintf("%s*%d", selected.calc_string, num[j]),
-									total:       selected.total * num[j],
-								}
-							case 3:
-								if selected.total%num[j] == 0 {
-									result = Node{
-										indice:      append(selected.indice, j),
-										calculation: append(selected.calculation, e, num[j]),
-										calc_string: fmt.Sprintf("%s/%d", selected.calc_string, num[j]),
-										total:       selected.total / num[j],
-									}
-								} else {
-									break equation
-								}
+					if slices.Contains(selected.indice, j) {
+						continue
+					}
+					// Loop through the arithmatic symbols
+					for e := 0; e < eq; e++ {
+						newIndice := []int{}
+						newCalculation := []int{}
+						newIndice = append(newIndice, selected.indice...)
+						newCalculation = append(newCalculation, selected.calculation...)
+						var result Node
+						switch e {
+						case 0:
+							result = Node{
+								branch:      loop,
+								parent:      i,
+								indice:      append(newIndice, j),
+								calculation: append(newCalculation, e, j),
+								calc_string: fmt.Sprintf("%s+%d", selected.calc_string, num[j]),
+								total:       selected.total + num[j],
 							}
-
-							calc = append(calc, result)
-							if math.Abs(float64(closest.total-target)) > math.Abs(float64(result.total-target)) {
-								closest = result
+						case 1:
+							result = Node{
+								branch:      loop,
+								parent:      i,
+								indice:      append(newIndice, j),
+								calculation: append(newCalculation, e, j),
+								calc_string: fmt.Sprintf("%s-%d", selected.calc_string, num[j]),
+								total:       selected.total - num[j],
 							}
-							if result.total == target {
-								break out
+						case 2:
+							result = Node{
+								branch:      loop,
+								parent:      i,
+								indice:      append(newIndice, j),
+								calculation: append(newCalculation, e, j),
+								calc_string: fmt.Sprintf("%s*%d", selected.calc_string, num[j]),
+								total:       selected.total * num[j],
+							}
+						case 3:
+							if selected.total%num[j] != 0 {
+								continue
+							}
+							result = Node{
+								branch:      loop,
+								parent:      i,
+								indice:      append(newIndice, j),
+								calculation: append(newCalculation, e, j),
+								calc_string: fmt.Sprintf("%s/%d", selected.calc_string, num[j]),
+								total:       selected.total / num[j],
 							}
 						}
+
+						calc = append(calc, result)
+						if math.Abs(float64(closest.total-target)) > math.Abs(float64(result.total-target)) {
+							closest = result
+						}
+						if result.total == target {
+							closest = result
+							break out
+						}
+
 					}
 				}
 			}
 		}
+
 		oldlength = length
 	}
 
-	for i, e := range calc {
-		fmt.Printf("%d %s=%d\n", i, e.calc_string, e.total)
-	}
+	fmt.Printf("Closest: %v\n", closest)
 
-	fmt.Printf("Closest: %s=%d\n", closest.calc_string, closest.total)
+	// parent := closest.parent
+	// for parent > len(num) {
+	// 	parentNode := calc[parent]
+	// 	fmt.Printf("Closest: %v = %d\n", parentNode, parent)
+	// 	parent = parentNode.parent
+	// }
 }
