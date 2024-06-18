@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"math"
 	"os"
-	"slices"
 	"strconv"
 	"strings"
 )
@@ -59,85 +58,82 @@ func main() {
 
 	fmt.Printf("Target: %d and numbers is %v\n", target, num)
 
-	slices.Sort(num)
-	slices.Reverse(num)
-
 	calc := []Node{}
 	closest := Node{total: 0}
-	// Level 1
-	for i := 0; i < len(num); i++ {
-		result := Node{
-			indice:      []int{i},
-			calc_string: fmt.Sprintf("%d", num[i]),
-			total:       num[i],
-		}
-		calc = append(calc, result)
-		if math.Abs(float64(closest.total-target)) > math.Abs(float64(result.total-target)) {
-			closest = result
-		}
-		if result.total == target {
-			closest = result
-			break
-		}
-	}
-
 	// Level all
 out:
-	for loop := 0; loop < len(num)-1; loop++ {
-
-		length := len(calc)
-		for i := 0; i < length; i++ {
-			for j := 0; j < length; j++ {
-				first := calc[i]
-				second := calc[j]
-
-				if i == j || containsSame(first.indice, second.indice) {
-					continue
+	for loop := 0; loop < len(num); loop++ {
+		if loop == 0 {
+			for i := 0; i < len(num); i++ {
+				result := Node{
+					indice:      []int{i},
+					calc_string: fmt.Sprintf("%d", num[i]),
+					total:       num[i],
 				}
+				calc = append(calc, result)
+				if math.Abs(float64(closest.total-target)) > math.Abs(float64(result.total-target)) {
+					closest = result
+				}
+				if result.total == target {
+					closest = result
+					break out
+				}
+			}
+		} else {
+			length := len(calc)
+			for i := 0; i < length; i++ {
+				for j := 0; j < length; j++ {
+					first := calc[i]
+					second := calc[j]
 
-				newIncides := []int{}
-				newIncides = append(newIncides, first.indice...)
-				newIncides = append(newIncides, second.indice...)
-				for e := 0; e < 4; e++ {
-					var result Node
-					switch e {
-					case 0:
-						result = Node{
-							indice:      newIncides,
-							calc_string: fmt.Sprintf("(%s+%s)", first.calc_string, second.calc_string),
-							total:       first.total + second.total,
-						}
-					case 1:
-						result = Node{
-							indice:      newIncides,
-							calc_string: fmt.Sprintf("(%s-%s)", first.calc_string, second.calc_string),
-							total:       first.total - second.total,
-						}
-					case 2:
-						result = Node{
-							indice:      newIncides,
-							calc_string: fmt.Sprintf("%s*%s", first.calc_string, second.calc_string),
-							total:       first.total * second.total,
-						}
-					case 3:
-						if second.total == 0 || first.total%second.total != 0 {
-							continue
-						}
-						result = Node{
-							indice:      newIncides,
-							calc_string: fmt.Sprintf("%s/%s", first.calc_string, second.calc_string),
-							total:       first.total / second.total,
-						}
+					if i == j || containsSame(first.indice, second.indice) {
+						continue
 					}
 
-					calc = append(calc, result)
+					newIncides := []int{}
+					newIncides = append(newIncides, first.indice...)
+					newIncides = append(newIncides, second.indice...)
+					for e := 0; e < 4; e++ {
+						var result Node
+						switch e {
+						case 0:
+							result = Node{
+								indice:      newIncides,
+								calc_string: fmt.Sprintf("(%s+%s)", first.calc_string, second.calc_string),
+								total:       first.total + second.total,
+							}
+						case 1:
+							result = Node{
+								indice:      newIncides,
+								calc_string: fmt.Sprintf("(%s-%s)", first.calc_string, second.calc_string),
+								total:       first.total - second.total,
+							}
+						case 2:
+							result = Node{
+								indice:      newIncides,
+								calc_string: fmt.Sprintf("%s*%s", first.calc_string, second.calc_string),
+								total:       first.total * second.total,
+							}
+						case 3:
+							if second.total == 0 || first.total%second.total != 0 {
+								continue
+							}
+							result = Node{
+								indice:      newIncides,
+								calc_string: fmt.Sprintf("%s/%s", first.calc_string, second.calc_string),
+								total:       first.total / second.total,
+							}
+						}
 
-					if math.Abs(float64(closest.total-target)) > math.Abs(float64(result.total-target)) {
-						closest = result
-					}
-					if result.total == target {
-						closest = result
-						break out
+						calc = append(calc, result)
+
+						if math.Abs(float64(closest.total-target)) > math.Abs(float64(result.total-target)) {
+							closest = result
+						}
+						if result.total == target {
+							closest = result
+							break out
+						}
 					}
 				}
 			}
